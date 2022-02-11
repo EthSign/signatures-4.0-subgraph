@@ -1,0 +1,44 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: EthSignV4
+    network: kovan
+    source:
+      address: "0x4de376b5e14995a0Ce365AB9dB72132E433159AB"
+      abi: EthSignV4
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - AdminChanged
+        - BeaconUpgraded
+        - ContractHidden
+        - ContractSigningCompleted
+        - OwnershipTransferred
+        - SignerSigned
+        - SignersAdded
+        - Upgraded
+      abis:
+        - name: EthSignV4
+          file: ./abis/EthSignV4.json
+      eventHandlers:
+        - event: AdminChanged(address,address)
+          handler: handleAdminChanged
+        - event: BeaconUpgraded(indexed address)
+          handler: handleBeaconUpgraded
+        - event: ContractHidden(bytes32,address)
+          handler: handleContractHidden
+        - event: ContractSigningCompleted(bytes32)
+          handler: handleContractSigningCompleted
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: SignerSigned(bytes32,address,bytes32)
+          handler: handleSignerSigned
+        - event: SignersAdded(bytes32,address[])
+          handler: handleSignersAdded
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+      file: ./src/mapping.ts

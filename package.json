@@ -1,0 +1,16 @@
+{
+  "name": "ethsign-4-kovan",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ ethsign/ethsign-4-kovan",
+    "create-local": "graph create --node http://localhost:8020/ ethsign/ethsign-4-kovan",
+    "remove-local": "graph remove --node http://localhost:8020/ ethsign/ethsign-4-kovan",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethsign/ethsign-4-kovan"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.26.0",
+    "@graphprotocol/graph-ts": "0.24.1"
+  }
+}
