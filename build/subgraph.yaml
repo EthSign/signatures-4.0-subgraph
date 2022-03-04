@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: EthSignV4
@@ -24,7 +24,7 @@ dataSources:
         - Upgraded
       abis:
         - name: EthSignV4
-          file: ./abis/EthSignV4.json
+          file: EthSignV4/abis/EthSignV4.json
       eventHandlers:
         - event: AdminChanged(address,address)
           handler: handleAdminChanged
@@ -44,4 +44,4 @@ dataSources:
           handler: handleSignersAdded
         - event: Upgraded(indexed address)
           handler: handleUpgraded
-      file: ./src/mapping.ts
+      file: EthSignV4/EthSignV4.wasm

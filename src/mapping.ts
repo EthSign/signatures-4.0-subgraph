@@ -1,80 +1,96 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   EthSignV4,
   AdminChanged,
   BeaconUpgraded,
+  ContractCreated,
   ContractHidden,
   ContractSigningCompleted,
   OwnershipTransferred,
+  RecipientsAdded,
   SignerSigned,
-  SignersAdded,
-  Upgraded
-} from "../generated/EthSignV4/EthSignV4"
-import { ExampleEntity } from "../generated/schema"
+  Upgraded,
+} from "../generated/EthSignV4/EthSignV4";
+import { Contract, Event, User } from "../generated/schema";
 
-export function handleAdminChanged(event: AdminChanged): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
-
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
-  }
-
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
-  // Entity fields can be set based on event parameters
-  entity.previousAdmin = event.params.previousAdmin
-  entity.newAdmin = event.params.newAdmin
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.STATUS_BITMASK(...)
-  // - contract.STEP_BITMASK(...)
-  // - contract.chainId(...)
-  // - contract.create(...)
-  // - contract.decodeSignerData(...)
-  // - contract.encodeSignerData(...)
-  // - contract.getContract(...)
-  // - contract.hashString(...)
-  // - contract.isTrustedForwarder(...)
-  // - contract.owner(...)
+function createEvent(
+  event: ethereum.Event,
+  type: string,
+  contract: Bytes,
+  involvedEntity: Bytes | null
+): void {
+  let _event = new Event(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
+  _event.type = type;
+  _event.contract = contract.toString();
+  _event.timestamp = event.block.timestamp;
+  _event.involvedEntity = involvedEntity;
+  _event.save();
 }
+
+export function handleAdminChanged(event: AdminChanged): void {}
 
 export function handleBeaconUpgraded(event: BeaconUpgraded): void {}
 
-export function handleContractHidden(event: ContractHidden): void {}
+export function handleContractCreated(event: ContractCreated): void {
+  let contract = new Contract(event.params.contractId.toString());
+  contract.name = ByteArray.fromUTF8(event.params.name);
+  contract.birth = event.block.timestamp;
+  contract.initiator = event.params.initiator;
+  contract.signers = [];
+  contract.signedSigners = [];
+  contract.viewers = [];
+  contract.signed = false;
+  contract.save();
+  createEvent(
+    event,
+    "ContractCreated",
+    event.params.contractId,
+    event.params.initiator
+  );
+}
+
+export function handleContractHidden(event: ContractHidden): void {
+  createEvent(
+    event,
+    "ContractHidden",
+    event.params.contractId,
+    event.params.party
+  );
+}
 
 export function handleContractSigningCompleted(
   event: ContractSigningCompleted
-): void {}
+): void {
+  let contract = Contract.load(event.params.contractId.toString())!;
+  contract.signed = true;
+  contract.save();
+  createEvent(event, "ContractSigningCompleted", event.params.contractId, null);
+}
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
 
-export function handleSignerSigned(event: SignerSigned): void {}
+export function handleSignerSigned(event: SignerSigned): void {
+  let contract = Contract.load(event.params.contractId.toString())!;
+  let signedSigners = contract.signedSigners;
+  signedSigners.push(event.params.signer);
+  contract.signedSigners = signedSigners;
+  contract.save();
+  createEvent(
+    event,
+    "SignerSigned",
+    event.params.contractId,
+    event.params.signer
+  );
+}
 
-export function handleSignersAdded(event: SignersAdded): void {}
+export function handleRecipientsAdded(event: RecipientsAdded): void {
+  let contract = Contract.load(event.params.contractId.toString())!;
+  contract.signers = event.params.signers;
+  contract.viewers = event.params.viewers;
+  contract.save();
+  createEvent(event, "RecipientsAdded", event.params.contractId, null);
+}
 
 export function handleUpgraded(event: Upgraded): void {}
