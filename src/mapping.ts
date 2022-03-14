@@ -35,7 +35,7 @@ export function handleBeaconUpgraded(event: BeaconUpgraded): void {}
 
 export function handleContractCreated(event: ContractCreated): void {
   let contract = new Contract(event.params.contractId.toString());
-  contract.name = ByteArray.fromHexString(event.params.name);
+  contract.name = event.params.name;
   contract.birth = event.block.timestamp;
   contract.initiator = event.params.initiator;
   contract.signers = [];
@@ -87,10 +87,29 @@ export function handleSignerSigned(event: SignerSigned): void {
 
 export function handleRecipientsAdded(event: RecipientsAdded): void {
   let contract = Contract.load(event.params.contractId.toString())!;
-  contract.signers = event.params.signers;
-  contract.viewers = event.params.viewers;
+  let signers = contract.signers;
+  for (let i = 0; i < event.params.signers.length; ++i) {
+    signers.push(event.params.signers[i]);
+    createEvent(
+      event,
+      "Synthetic_SignerAdded",
+      event.params.contractId,
+      event.params.signers[i]
+    );
+  }
+  contract.signers = signers;
+  let viewers = contract.viewers;
+  for (let i = 0; i < event.params.viewers.length; ++i) {
+    viewers.push(event.params.viewers[i]);
+    createEvent(
+      event,
+      "Synthetic_ViewerAdded",
+      event.params.contractId,
+      event.params.signers[i]
+    );
+  }
+  contract.viewers = viewers;
   contract.save();
-  createEvent(event, "RecipientsAdded", event.params.contractId, null);
 }
 
 export function handleUpgraded(event: Upgraded): void {}

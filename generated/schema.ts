@@ -96,7 +96,7 @@ export class Contract extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("name", Value.fromBytes(Bytes.empty()));
+    this.set("name", Value.fromString(""));
     this.set("birth", Value.fromBigInt(BigInt.zero()));
     this.set("initiator", Value.fromBytes(Bytes.empty()));
     this.set("signers", Value.fromBytesArray(new Array(0)));
@@ -130,13 +130,13 @@ export class Contract extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get name(): Bytes {
+  get name(): string {
     let value = this.get("name");
-    return value!.toBytes();
+    return value!.toString();
   }
 
-  set name(value: Bytes) {
-    this.set("name", Value.fromBytes(value));
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
   }
 
   get birth(): BigInt {

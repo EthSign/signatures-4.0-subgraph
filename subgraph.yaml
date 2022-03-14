@@ -4,10 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: EthSignV4
-    network: kovan
+    network: mumbai
     source:
-      address: "0x4de376b5e14995a0Ce365AB9dB72132E433159AB"
+      address: "0x7D9eFe8Ec7f1f861b8782C6Ee052f9392E1c33c0"
       abi: EthSignV4
+      startBlock: 25503400
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
