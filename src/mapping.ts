@@ -35,7 +35,7 @@ export function handleBeaconUpgraded(event: BeaconUpgraded): void {}
 
 export function handleContractCreated(event: ContractCreated): void {
   let contract = new Contract(event.params.contractId.toString());
-  contract.name = ByteArray.fromUTF8(event.params.name);
+  contract.name = ByteArray.fromHexString(event.params.name);
   contract.birth = event.block.timestamp;
   contract.initiator = event.params.initiator;
   contract.signers = [];
