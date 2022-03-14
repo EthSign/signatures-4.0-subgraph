@@ -98,6 +98,7 @@ export class Contract extends Entity {
 
     this.set("name", Value.fromString(""));
     this.set("birth", Value.fromBigInt(BigInt.zero()));
+    this.set("expiry", Value.fromBigInt(BigInt.zero()));
     this.set("initiator", Value.fromBytes(Bytes.empty()));
     this.set("signers", Value.fromBytesArray(new Array(0)));
     this.set("signedSigners", Value.fromBytesArray(new Array(0)));
@@ -146,6 +147,15 @@ export class Contract extends Entity {
 
   set birth(value: BigInt) {
     this.set("birth", Value.fromBigInt(value));
+  }
+
+  get expiry(): BigInt {
+    let value = this.get("expiry");
+    return value!.toBigInt();
+  }
+
+  set expiry(value: BigInt) {
+    this.set("expiry", Value.fromBigInt(value));
   }
 
   get initiator(): Bytes {

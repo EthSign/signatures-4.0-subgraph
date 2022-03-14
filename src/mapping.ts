@@ -1,4 +1,4 @@
-import { BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   EthSignV4,
   AdminChanged,
@@ -35,8 +35,11 @@ export function handleBeaconUpgraded(event: BeaconUpgraded): void {}
 
 export function handleContractCreated(event: ContractCreated): void {
   let contract = new Contract(event.params.contractId.toString());
+  const ethsignInstance = EthSignV4.bind(event.address);
+  const contractStruct = ethsignInstance.getContract(event.params.contractId);
   contract.name = event.params.name;
   contract.birth = event.block.timestamp;
+  contract.expiry = contractStruct.expiry;
   contract.initiator = event.params.initiator;
   contract.signers = [];
   contract.signedSigners = [];
