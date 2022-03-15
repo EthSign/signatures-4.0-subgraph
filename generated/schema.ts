@@ -101,6 +101,7 @@ export class Contract extends Entity {
     this.set("expiry", Value.fromBigInt(BigInt.zero()));
     this.set("initiator", Value.fromBytes(Bytes.empty()));
     this.set("signers", Value.fromBytesArray(new Array(0)));
+    this.set("steps", Value.fromBigIntArray(new Array(0)));
     this.set("signedSigners", Value.fromBytesArray(new Array(0)));
     this.set("viewers", Value.fromBytesArray(new Array(0)));
     this.set("signed", Value.fromBoolean(false));
@@ -174,6 +175,15 @@ export class Contract extends Entity {
 
   set signers(value: Array<Bytes>) {
     this.set("signers", Value.fromBytesArray(value));
+  }
+
+  get steps(): Array<BigInt> {
+    let value = this.get("steps");
+    return value!.toBigIntArray();
+  }
+
+  set steps(value: Array<BigInt>) {
+    this.set("steps", Value.fromBigIntArray(value));
   }
 
   get signedSigners(): Array<Bytes> {

@@ -22,6 +22,7 @@ type Contract @entity {
   expiry: BigInt!
   initiator: Bytes!
   signers: [Bytes!]!
+  steps: [BigInt!]!
   signedSigners: [Bytes!]!
   viewers: [Bytes!]!
   signed: Boolean!

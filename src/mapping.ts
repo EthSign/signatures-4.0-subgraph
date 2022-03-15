@@ -1,4 +1,4 @@
-import { Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   EthSignV4,
   AdminChanged,
@@ -29,6 +29,19 @@ function createEvent(
   _event.save();
 }
 
+function getSteps(instance: EthSignV4, contractId: Bytes): BigInt[] {
+  let steps: BigInt[] = [];
+  const packedSignersAndStatus = instance.getContract(contractId)
+    .packedSignersAndStatus;
+  for (let i = 0; i < packedSignersAndStatus.length; ++i) {
+    const v = packedSignersAndStatus[i];
+    const decodedSignerData = instance.decodeSignerData(v);
+    const step = decodedSignerData.value1;
+    steps.push(BigInt.fromI32(step));
+  }
+  return steps;
+}
+
 export function handleAdminChanged(event: AdminChanged): void {}
 
 export function handleBeaconUpgraded(event: BeaconUpgraded): void {}
@@ -42,6 +55,7 @@ export function handleContractCreated(event: ContractCreated): void {
   contract.expiry = contractStruct.expiry;
   contract.initiator = event.params.initiator;
   contract.signers = [];
+  contract.steps = [];
   contract.signedSigners = [];
   contract.viewers = [];
   contract.signed = false;
@@ -112,6 +126,10 @@ export function handleRecipientsAdded(event: RecipientsAdded): void {
     );
   }
   contract.viewers = viewers;
+  contract.steps = getSteps(
+    EthSignV4.bind(event.address),
+    event.params.contractId
+  );
   contract.save();
 }
 

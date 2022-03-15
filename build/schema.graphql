@@ -19,8 +19,10 @@ type Contract @entity {
   id: ID!
   name: String!
   birth: BigInt!
+  expiry: BigInt!
   initiator: Bytes!
   signers: [Bytes!]!
+  steps: [BigInt!]!
   signedSigners: [Bytes!]!
   viewers: [Bytes!]!
   signed: Boolean!
