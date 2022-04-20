@@ -50,6 +50,32 @@ export class BeaconUpgraded__Params {
   }
 }
 
+export class ContractCreated extends ethereum.Event {
+  get params(): ContractCreated__Params {
+    return new ContractCreated__Params(this);
+  }
+}
+
+export class ContractCreated__Params {
+  _event: ContractCreated;
+
+  constructor(event: ContractCreated) {
+    this._event = event;
+  }
+
+  get contractId(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get name(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get initiator(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+}
+
 export class ContractHidden extends ethereum.Event {
   get params(): ContractHidden__Params {
     return new ContractHidden__Params(this);
@@ -112,6 +138,32 @@ export class OwnershipTransferred__Params {
   }
 }
 
+export class RecipientsAdded extends ethereum.Event {
+  get params(): RecipientsAdded__Params {
+    return new RecipientsAdded__Params(this);
+  }
+}
+
+export class RecipientsAdded__Params {
+  _event: RecipientsAdded;
+
+  constructor(event: RecipientsAdded) {
+    this._event = event;
+  }
+
+  get contractId(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get signers(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+
+  get viewers(): Array<Address> {
+    return this._event.parameters[2].value.toAddressArray();
+  }
+}
+
 export class SignerSigned extends ethereum.Event {
   get params(): SignerSigned__Params {
     return new SignerSigned__Params(this);
@@ -131,32 +183,6 @@ export class SignerSigned__Params {
 
   get signer(): Address {
     return this._event.parameters[1].value.toAddress();
-  }
-
-  get ipfsCIDv0(): Bytes {
-    return this._event.parameters[2].value.toBytes();
-  }
-}
-
-export class SignersAdded extends ethereum.Event {
-  get params(): SignersAdded__Params {
-    return new SignersAdded__Params(this);
-  }
-}
-
-export class SignersAdded__Params {
-  _event: SignersAdded;
-
-  constructor(event: SignersAdded) {
-    this._event = event;
-  }
-
-  get contractId(): Bytes {
-    return this._event.parameters[0].value.toBytes();
-  }
-
-  get signers(): Array<Address> {
-    return this._event.parameters[1].value.toAddressArray();
   }
 }
 
@@ -205,28 +231,20 @@ export class EthSignV4__decodeSignerDataResult {
 }
 
 export class EthSignV4__getContractResultValue0Struct extends ethereum.Tuple {
-  get strictMode(): boolean {
-    return this[0].toBoolean();
-  }
-
   get expiry(): BigInt {
-    return this[1].toBigInt();
+    return this[0].toBigInt();
   }
 
   get rawDataHash(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get ipfsCIDv0(): Bytes {
-    return this[3].toBytes();
+    return this[1].toBytes();
   }
 
   get signersLeftPerStep(): Array<i32> {
-    return this[4].toI32Array();
+    return this[2].toI32Array();
   }
 
   get packedSignersAndStatus(): Array<BigInt> {
-    return this[5].toBigIntArray();
+    return this[3].toBigIntArray();
   }
 }
 
@@ -285,25 +303,25 @@ export class EthSignV4 extends ethereum.SmartContract {
   }
 
   create(
-    strictMode_: boolean,
+    name: string,
     expiry_: BigInt,
     rawDataHash_: Bytes,
-    ipfsCIDv0_: Bytes,
     signersPerStep: Array<i32>,
     signers: Array<Address>,
-    signersData: Array<BigInt>
+    signersData: Array<BigInt>,
+    viewers: Array<Address>
   ): Bytes {
     let result = super.call(
       "create",
-      "create(bool,uint32,bytes32,bytes32,uint8[],address[],uint168[]):(bytes32)",
+      "create(string,uint32,bytes32,uint8[],address[],uint168[],address[]):(bytes32)",
       [
-        ethereum.Value.fromBoolean(strictMode_),
+        ethereum.Value.fromString(name),
         ethereum.Value.fromUnsignedBigInt(expiry_),
         ethereum.Value.fromFixedBytes(rawDataHash_),
-        ethereum.Value.fromFixedBytes(ipfsCIDv0_),
         ethereum.Value.fromI32Array(signersPerStep),
         ethereum.Value.fromAddressArray(signers),
-        ethereum.Value.fromUnsignedBigIntArray(signersData)
+        ethereum.Value.fromUnsignedBigIntArray(signersData),
+        ethereum.Value.fromAddressArray(viewers)
       ]
     );
 
@@ -311,25 +329,25 @@ export class EthSignV4 extends ethereum.SmartContract {
   }
 
   try_create(
-    strictMode_: boolean,
+    name: string,
     expiry_: BigInt,
     rawDataHash_: Bytes,
-    ipfsCIDv0_: Bytes,
     signersPerStep: Array<i32>,
     signers: Array<Address>,
-    signersData: Array<BigInt>
+    signersData: Array<BigInt>,
+    viewers: Array<Address>
   ): ethereum.CallResult<Bytes> {
     let result = super.tryCall(
       "create",
-      "create(bool,uint32,bytes32,bytes32,uint8[],address[],uint168[]):(bytes32)",
+      "create(string,uint32,bytes32,uint8[],address[],uint168[],address[]):(bytes32)",
       [
-        ethereum.Value.fromBoolean(strictMode_),
+        ethereum.Value.fromString(name),
         ethereum.Value.fromUnsignedBigInt(expiry_),
         ethereum.Value.fromFixedBytes(rawDataHash_),
-        ethereum.Value.fromFixedBytes(ipfsCIDv0_),
         ethereum.Value.fromI32Array(signersPerStep),
         ethereum.Value.fromAddressArray(signers),
-        ethereum.Value.fromUnsignedBigIntArray(signersData)
+        ethereum.Value.fromUnsignedBigIntArray(signersData),
+        ethereum.Value.fromAddressArray(viewers)
       ]
     );
     if (result.reverted) {
@@ -409,7 +427,7 @@ export class EthSignV4 extends ethereum.SmartContract {
   getContract(contractId: Bytes): EthSignV4__getContractResultValue0Struct {
     let result = super.call(
       "getContract",
-      "getContract(bytes32):((bool,uint32,bytes32,bytes32,uint8[],uint168[]))",
+      "getContract(bytes32):((uint32,bytes32,uint8[],uint168[]))",
       [ethereum.Value.fromFixedBytes(contractId)]
     );
 
@@ -423,7 +441,7 @@ export class EthSignV4 extends ethereum.SmartContract {
   ): ethereum.CallResult<EthSignV4__getContractResultValue0Struct> {
     let result = super.tryCall(
       "getContract",
-      "getContract(bytes32):((bool,uint32,bytes32,bytes32,uint8[],uint168[]))",
+      "getContract(bytes32):((uint32,bytes32,uint8[],uint168[]))",
       [ethereum.Value.fromFixedBytes(contractId)]
     );
     if (result.reverted) {
@@ -433,25 +451,6 @@ export class EthSignV4 extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(
       changetype<EthSignV4__getContractResultValue0Struct>(value[0].toTuple())
     );
-  }
-
-  hashString(str: string): Bytes {
-    let result = super.call("hashString", "hashString(string):(bytes32)", [
-      ethereum.Value.fromString(str)
-    ]);
-
-    return result[0].toBytes();
-  }
-
-  try_hashString(str: string): ethereum.CallResult<Bytes> {
-    let result = super.tryCall("hashString", "hashString(string):(bytes32)", [
-      ethereum.Value.fromString(str)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
   isTrustedForwarder(forwarder: Address): boolean {
@@ -510,8 +509,8 @@ export class CreateCall__Inputs {
     this._call = call;
   }
 
-  get strictMode_(): boolean {
-    return this._call.inputValues[0].value.toBoolean();
+  get name(): string {
+    return this._call.inputValues[0].value.toString();
   }
 
   get expiry_(): BigInt {
@@ -522,20 +521,20 @@ export class CreateCall__Inputs {
     return this._call.inputValues[2].value.toBytes();
   }
 
-  get ipfsCIDv0_(): Bytes {
-    return this._call.inputValues[3].value.toBytes();
-  }
-
   get signersPerStep(): Array<i32> {
-    return this._call.inputValues[4].value.toI32Array();
+    return this._call.inputValues[3].value.toI32Array();
   }
 
   get signers(): Array<Address> {
-    return this._call.inputValues[5].value.toAddressArray();
+    return this._call.inputValues[4].value.toAddressArray();
   }
 
   get signersData(): Array<BigInt> {
-    return this._call.inputValues[6].value.toBigIntArray();
+    return this._call.inputValues[5].value.toBigIntArray();
+  }
+
+  get viewers(): Array<Address> {
+    return this._call.inputValues[6].value.toAddressArray();
   }
 }
 
@@ -666,12 +665,8 @@ export class SignCall__Inputs {
     return this._call.inputValues[1].value.toBigInt();
   }
 
-  get ipfsCIDv0_(): Bytes {
-    return this._call.inputValues[2].value.toBytes();
-  }
-
   get signature(): Bytes {
-    return this._call.inputValues[3].value.toBytes();
+    return this._call.inputValues[2].value.toBytes();
   }
 }
 
