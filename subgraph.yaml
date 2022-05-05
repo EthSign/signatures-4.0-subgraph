@@ -4,45 +4,33 @@ schema:
 dataSources:
   - kind: ethereum
     name: EthSignV4
-    network: mumbai
+    network: matic
     source:
-      address: "0x7D9eFe8Ec7f1f861b8782C6Ee052f9392E1c33c0"
+      address: "0xf2EAcFb27a9C01E123B15F66e1B0082BFc8D1334"
       abi: EthSignV4
-      startBlock: 25503400
+      startBlock: 27942587
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - AdminChanged
-        - BeaconUpgraded
         - ContractCreated
         - ContractHidden
         - ContractSigningCompleted
-        - OwnershipTransferred
         - SignerSigned
         - RecipientsAdded
-        - Upgraded
       abis:
         - name: EthSignV4
           file: ./abis/EthSignV4.json
       eventHandlers:
-        - event: AdminChanged(address,address)
-          handler: handleAdminChanged
-        - event: BeaconUpgraded(indexed address)
-          handler: handleBeaconUpgraded
         - event: ContractCreated(bytes32,string,address)
           handler: handleContractCreated
         - event: ContractHidden(bytes32,address)
           handler: handleContractHidden
         - event: ContractSigningCompleted(bytes32)
           handler: handleContractSigningCompleted
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
         - event: SignerSigned(bytes32,address)
           handler: handleSignerSigned
-        - event: RecipientsAdded(bytes32,address[],address[])
-          handler: handleSignersAdded
-        - event: Upgraded(indexed address)
-          handler: handleUpgraded
+        - event: RecipientsAdded(bytes32,uint168[],address[])
+          handler: handleRecipientsAdded
       file: ./src/mapping.ts
