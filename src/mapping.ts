@@ -17,7 +17,8 @@ function createEvent(
   event: ethereum.Event,
   type: string,
   contract: Bytes,
-  involvedEntity: Bytes | null
+  involvedEntity: Bytes | null,
+  rawDataHash: string | null
 ): void {
   let _event = new Event(
     event.transaction.hash.toHexString() + "-" + event.logIndex.toString()
@@ -26,6 +27,7 @@ function createEvent(
   _event.contract = contract.toHexString();
   _event.timestamp = event.block.timestamp;
   _event.involvedEntity = involvedEntity;
+  _event.rawDataHash = rawDataHash;
   _event.save();
 }
 
@@ -61,7 +63,8 @@ export function handleContractCreated(event: ContractCreated): void {
     event,
     "ContractCreated",
     event.params.contractId,
-    event.params.initiator
+    event.params.initiator,
+    null
   );
 }
 
@@ -70,7 +73,8 @@ export function handleContractHidden(event: ContractHidden): void {
     event,
     "ContractHidden",
     event.params.contractId,
-    event.params.party
+    event.params.party,
+    null
   );
 }
 
@@ -80,7 +84,13 @@ export function handleContractSigningCompleted(
   let contract = Contract.load(event.params.contractId.toHexString())!;
   contract.signed = true;
   contract.save();
-  createEvent(event, "ContractSigningCompleted", event.params.contractId, null);
+  createEvent(
+    event,
+    "ContractSigningCompleted",
+    event.params.contractId,
+    null,
+    null
+  );
 }
 
 export function handleSignerSigned(event: SignerSigned): void {
@@ -93,7 +103,8 @@ export function handleSignerSigned(event: SignerSigned): void {
     event,
     "SignerSigned",
     event.params.contractId,
-    event.params.signer
+    event.params.signer,
+    event.params.rawSignatureDataHash
   );
 }
 
@@ -109,7 +120,8 @@ export function handleRecipientsAdded(event: RecipientsAdded): void {
       event,
       "Synthetic_SignerAdded",
       event.params.contractId,
-      signerAddress
+      signerAddress,
+      null
     );
   }
   contract.signers = signers;
@@ -120,7 +132,8 @@ export function handleRecipientsAdded(event: RecipientsAdded): void {
       event,
       "Synthetic_ViewerAdded",
       event.params.contractId,
-      event.params.viewers[i]
+      event.params.viewers[i],
+      null
     );
   }
   contract.viewers = viewers;

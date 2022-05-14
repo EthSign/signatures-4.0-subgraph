@@ -29,7 +29,7 @@ dataSources:
           handler: handleContractHidden
         - event: ContractSigningCompleted(bytes32)
           handler: handleContractSigningCompleted
-        - event: SignerSigned(bytes32,address)
+        - event: SignerSigned(bytes32,address,string)
           handler: handleSignerSigned
         - event: RecipientsAdded(bytes32,uint168[],address[])
           handler: handleRecipientsAdded

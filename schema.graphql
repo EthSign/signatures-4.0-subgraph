@@ -13,6 +13,7 @@ type Event @entity(immutable: true) {
   timestamp: BigInt!
   type: EventType!
   involvedEntity: Bytes
+  rawDataHash: String
 }
 
 type Contract @entity {
