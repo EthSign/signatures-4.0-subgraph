@@ -6,9 +6,9 @@ dataSources:
     name: EthSignV4
     network: matic
     source:
-      address: "0xf2EAcFb27a9C01E123B15F66e1B0082BFc8D1334"
+      address: "0x47480015f1f1B96df687285Ff94e3B6125ae4D5E"
       abi: EthSignV4
-      startBlock: 27942587
+      startBlock: 28286935
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -23,7 +23,7 @@ dataSources:
         - name: EthSignV4
           file: ./abis/EthSignV4.json
       eventHandlers:
-        - event: ContractCreated(bytes32,string,address)
+        - event: ContractCreated(bytes32,string,address,uint8)
           handler: handleContractCreated
         - event: ContractHidden(bytes32,address)
           handler: handleContractHidden

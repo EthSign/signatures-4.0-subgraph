@@ -28,6 +28,7 @@ type Contract @entity {
   signedSigners: [Bytes!]!
   viewers: [Bytes!]!
   signed: Boolean!
+  metadata: Int!
 }
 
 type User @entity {

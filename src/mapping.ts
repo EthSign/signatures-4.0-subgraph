@@ -58,6 +58,7 @@ export function handleContractCreated(event: ContractCreated): void {
   contract.signedSigners = [];
   contract.viewers = [];
   contract.signed = false;
+  contract.metadata = event.params.metadata;
   contract.save();
   createEvent(
     event,
