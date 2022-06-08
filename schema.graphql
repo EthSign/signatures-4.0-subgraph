@@ -28,10 +28,15 @@ type Contract @entity {
   signedSigners: [Bytes!]!
   viewers: [Bytes!]!
   signed: Boolean!
-  metadata: Int!
+  metadata: Int
 }
 
 type User @entity {
   id: ID!
   joinedTimestamp: BigInt!
+}
+
+type GeneralInfo @entity {
+  id: ID!
+  contractsSigned: Int
 }

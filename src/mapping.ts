@@ -1,4 +1,4 @@
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   EthSignV4,
   AdminChanged,
@@ -11,7 +11,9 @@ import {
   SignerSigned,
   Upgraded,
 } from "../generated/EthSignV4/EthSignV4";
-import { Contract, Event, User } from "../generated/schema";
+import { Contract, Event, GeneralInfo, User } from "../generated/schema";
+
+const GENERAL_INFO_ID = "GENERAL_INFO_ID";
 
 function createEvent(
   event: ethereum.Event,
@@ -45,6 +47,8 @@ function getSteps(instance: EthSignV4, contractId: Bytes): BigInt[] {
 }
 
 export function handleContractCreated(event: ContractCreated): void {
+  let generalInfo = new GeneralInfo(GENERAL_INFO_ID);
+  // log.debug("{}", [generalInfo.contractsSigned.toString()]);
   let contract = new Contract(event.params.contractId.toHexString());
   const ethsignInstance = EthSignV4.bind(event.address);
   const contractStruct = ethsignInstance.getContract(event.params.contractId);
@@ -92,6 +96,15 @@ export function handleContractSigningCompleted(
     null,
     null
   );
+
+  let generalInfo = GeneralInfo.load(GENERAL_INFO_ID);
+  if (!generalInfo) {
+    generalInfo = new GeneralInfo(GENERAL_INFO_ID);
+    generalInfo.contractsSigned = 1;
+  } else {
+    generalInfo.contractsSigned++;
+  }
+  generalInfo.save();
 }
 
 export function handleSignerSigned(event: SignerSigned): void {
