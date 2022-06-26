@@ -32,11 +32,13 @@ type Contract @entity {
 }
 
 type User @entity {
-  id: ID!
+  id: Bytes!
   joinedTimestamp: BigInt!
 }
 
 type GeneralInfo @entity {
   id: ID!
-  contractsSigned: Int
+  contractsSigned: Int!
+  signaturesMade: Int!
+  totalUsers: Int!
 }

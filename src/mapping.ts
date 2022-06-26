@@ -1,15 +1,11 @@
-import { BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   EthSignV4,
-  AdminChanged,
-  BeaconUpgraded,
   ContractCreated,
   ContractHidden,
   ContractSigningCompleted,
-  OwnershipTransferred,
   RecipientsAdded,
   SignerSigned,
-  Upgraded,
 } from "../generated/EthSignV4/EthSignV4";
 import { Contract, Event, GeneralInfo, User } from "../generated/schema";
 
@@ -46,9 +42,19 @@ function getSteps(instance: EthSignV4, contractId: Bytes): BigInt[] {
   return steps;
 }
 
+function updateUserMetrics(address: Address, timestamp: BigInt): void {
+  let user = User.load(address);
+  if (!user) {
+    user = new User(address);
+    user.joinedTimestamp = timestamp;
+    let generalInfo = GeneralInfo.load(GENERAL_INFO_ID)!;
+    generalInfo.totalUsers++;
+    generalInfo.save();
+  }
+  user.save();
+}
+
 export function handleContractCreated(event: ContractCreated): void {
-  let generalInfo = new GeneralInfo(GENERAL_INFO_ID);
-  // log.debug("{}", [generalInfo.contractsSigned.toString()]);
   let contract = new Contract(event.params.contractId.toHexString());
   const ethsignInstance = EthSignV4.bind(event.address);
   const contractStruct = ethsignInstance.getContract(event.params.contractId);
@@ -71,6 +77,19 @@ export function handleContractCreated(event: ContractCreated): void {
     event.params.initiator,
     null
   );
+
+  let generalInfo = GeneralInfo.load(GENERAL_INFO_ID);
+  if (!generalInfo) {
+    generalInfo = new GeneralInfo(GENERAL_INFO_ID);
+    generalInfo.signaturesMade = 1;
+    generalInfo.contractsSigned = 0;
+    generalInfo.totalUsers = 0;
+  } else {
+    generalInfo.signaturesMade++;
+  }
+  generalInfo.save();
+
+  updateUserMetrics(event.params.initiator, event.block.timestamp);
 }
 
 export function handleContractHidden(event: ContractHidden): void {
@@ -100,7 +119,9 @@ export function handleContractSigningCompleted(
   let generalInfo = GeneralInfo.load(GENERAL_INFO_ID);
   if (!generalInfo) {
     generalInfo = new GeneralInfo(GENERAL_INFO_ID);
+    generalInfo.signaturesMade = 0;
     generalInfo.contractsSigned = 1;
+    generalInfo.totalUsers = 0;
   } else {
     generalInfo.contractsSigned++;
   }
@@ -120,6 +141,7 @@ export function handleSignerSigned(event: SignerSigned): void {
     event.params.signer,
     event.params.rawSignatureDataHash
   );
+  updateUserMetrics(event.params.signer, event.block.timestamp);
 }
 
 export function handleRecipientsAdded(event: RecipientsAdded): void {
