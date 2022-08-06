@@ -7,6 +7,7 @@ import {
   RecipientsAdded,
   SignerSigned,
 } from "../generated/EthSignV4/EthSignV4";
+import { Registered } from "../generated/EthSignPublicEncryptionKeyRegistry/EthSignPublicEncryptionKeyRegistry";
 import { Contract, Event, GeneralInfo, User } from "../generated/schema";
 
 const GENERAL_INFO_ID = "GENERAL_INFO_ID";
@@ -178,4 +179,13 @@ export function handleRecipientsAdded(event: RecipientsAdded): void {
     event.params.contractId
   );
   contract.save();
+}
+
+export function handleRegistered(event: Registered): void {
+  let user = User.load(event.params.entity);
+  if (!user) {
+    user = new User(event.params.entity);
+    user.publicEncryptionKey = event.params.publicEncryptionKey;
+  }
+  user.save();
 }

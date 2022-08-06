@@ -33,7 +33,8 @@ type Contract @entity {
 
 type User @entity {
   id: Bytes!
-  joinedTimestamp: BigInt!
+  joinedTimestamp: BigInt
+  publicEncryptionKey: String
 }
 
 type GeneralInfo @entity {

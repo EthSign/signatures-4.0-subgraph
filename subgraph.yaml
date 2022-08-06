@@ -34,3 +34,23 @@ dataSources:
         - event: RecipientsAdded(bytes32,uint168[],address[])
           handler: handleRecipientsAdded
       file: ./src/mapping.ts
+  - kind: ethereum
+    name: EthSignPublicEncryptionKeyRegistry
+    network: matic
+    source:
+      address: "0x7Dc2b15856320a8AE56209FC0565A8a095a2A803"
+      abi: EthSignPublicEncryptionKeyRegistry
+      startBlock: 27529860
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Registered
+      abis:
+        - name: EthSignPublicEncryptionKeyRegistry
+          file: ./abis/EthSignPublicEncryptionKeyRegistry.json
+      eventHandlers:
+        - event: Registered(address,string)
+          handler: handleRegistered
+      file: ./src/mapping.ts
