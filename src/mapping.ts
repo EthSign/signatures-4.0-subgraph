@@ -32,8 +32,11 @@ function createEvent(
 
 function getSteps(instance: EthSignV4, contractId: Bytes): BigInt[] {
   let steps: BigInt[] = [];
-  const packedSignersAndStatus = instance.getContract(contractId)
-    .packedSignersAndStatus;
+  const tryGetContract = instance.try_getContract(contractId);
+  if (tryGetContract.reverted) {
+    return steps;
+  }
+  const packedSignersAndStatus = tryGetContract.value.packedSignersAndStatus;
   for (let i = 0; i < packedSignersAndStatus.length; ++i) {
     const v = packedSignersAndStatus[i];
     const decodedSignerData = instance.decodeSignerData(v);
@@ -58,11 +61,16 @@ function updateUserMetrics(address: Address, timestamp: BigInt): void {
 export function handleContractCreated(event: ContractCreated): void {
   let contract = new Contract(event.params.contractId.toHexString());
   const ethsignInstance = EthSignV4.bind(event.address);
-  const contractStruct = ethsignInstance.getContract(event.params.contractId);
+  const contractStruct = ethsignInstance.try_getContract(
+    event.params.contractId
+  );
+  if (contractStruct.reverted) {
+    return;
+  }
   contract.name = event.params.name;
-  contract.rawDataHash = contractStruct.rawDataHash;
+  contract.rawDataHash = contractStruct.value.rawDataHash;
   contract.birth = event.block.timestamp;
-  contract.expiry = contractStruct.expiry;
+  contract.expiry = contractStruct.value.expiry;
   contract.initiator = event.params.initiator;
   contract.signers = [];
   contract.steps = [];
@@ -106,7 +114,10 @@ export function handleContractHidden(event: ContractHidden): void {
 export function handleContractSigningCompleted(
   event: ContractSigningCompleted
 ): void {
-  let contract = Contract.load(event.params.contractId.toHexString())!;
+  let contract = Contract.load(event.params.contractId.toHexString());
+  if (contract == null) {
+    return;
+  }
   contract.signed = true;
   contract.save();
   createEvent(
@@ -130,7 +141,10 @@ export function handleContractSigningCompleted(
 }
 
 export function handleSignerSigned(event: SignerSigned): void {
-  let contract = Contract.load(event.params.contractId.toHexString())!;
+  let contract = Contract.load(event.params.contractId.toHexString());
+  if (contract == null) {
+    return;
+  }
   let signedSigners = contract.signedSigners;
   signedSigners.push(event.params.signer);
   contract.signedSigners = signedSigners;
@@ -147,7 +161,10 @@ export function handleSignerSigned(event: SignerSigned): void {
 
 export function handleRecipientsAdded(event: RecipientsAdded): void {
   let instance = EthSignV4.bind(event.address);
-  let contract = Contract.load(event.params.contractId.toHexString())!;
+  let contract = Contract.load(event.params.contractId.toHexString());
+  if (contract == null) {
+    return;
+  }
   let signers: Bytes[] = [];
   for (let i = 0; i < event.params.signersData.length; ++i) {
     const signerAddress = instance.decodeSignerData(event.params.signersData[i])
