@@ -16,7 +16,7 @@ type Event @entity(immutable: true) {
   rawDataHash: String
 }
 
-type Contract @entity {
+type Contract @entity(immutable: false) {
   id: ID!
   name: String!
   rawDataHash: String!
@@ -31,13 +31,13 @@ type Contract @entity {
   metadata: Int
 }
 
-type User @entity {
+type User @entity(immutable: false) {
   id: Bytes!
   joinedTimestamp: BigInt
   publicEncryptionKey: String
 }
 
-type GeneralInfo @entity {
+type GeneralInfo @entity(immutable: false) {
   id: ID!
   contractsSigned: Int!
   signaturesMade: Int!
